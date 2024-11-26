@@ -1,5 +1,5 @@
 import flet as ft
-
+import math
 
 class CalcButton(ft.ElevatedButton):
     def __init__(self, text, button_clicked, expand=1):
@@ -31,8 +31,14 @@ class ExtraActionButton(CalcButton):
         self.color = ft.colors.BLACK
 
 
+class SciCalcButton(CalcButton):
+    def __init__(self, text, button_clicked):
+        CalcButton.__init__(self, text, button_clicked)
+        self.bgcolor = ft.colors.GREEN
+        self.color = ft.colors.WHITE
+
+
 class CalculatorApp(ft.Container):
-    # application's root control (i.e. "view") containing all other controls
     def __init__(self):
         super().__init__()
         self.reset()
@@ -90,6 +96,15 @@ class CalculatorApp(ft.Container):
                         ActionButton(text="=", button_clicked=self.button_clicked),
                     ]
                 ),
+                ft.Row(
+                    controls=[
+                        SciCalcButton(text="√", button_clicked=self.button_clicked),
+                        SciCalcButton(text="x²", button_clicked=self.button_clicked),
+                        SciCalcButton(text="log", button_clicked=self.button_clicked),
+                        SciCalcButton(text="ln", button_clicked=self.button_clicked),
+                        SciCalcButton(text="sin", button_clicked=self.button_clicked),
+                    ],
+                ),
             ]
         )
 
@@ -101,7 +116,7 @@ class CalculatorApp(ft.Container):
             self.reset()
 
         elif data in ("1", "2", "3", "4", "5", "6", "7", "8", "9", "0", "."):
-            if self.result.value == "0" or self.new_operand == True:
+            if self.result.value == "0" or self.new_operand:
                 self.result.value = data
                 self.new_operand = False
             else:
@@ -125,17 +140,34 @@ class CalculatorApp(ft.Container):
             self.reset()
 
         elif data in ("%"):
-            self.result.value = float(self.result.value) / 100
+            self.result.value = str(self.format_number(float(self.result.value) / 100))
             self.reset()
 
-        elif data in ("+/-"):
-            if float(self.result.value) > 0:
-                self.result.value = "-" + str(self.result.value)
+        elif data == "+/-":
+            if self.result.value.startswith('-'):
+                self.result.value = self.result.value[1:]
+            else:
+                self.result.value = '-' + self.result.value
 
-            elif float(self.result.value) < 0:
-                self.result.value = str(
-                    self.format_number(abs(float(self.result.value)))
-                )
+        elif data == "√":
+            self.result.value = str(self.format_number(math.sqrt(float(self.result.value))))
+            self.reset()
+
+        elif data == "x²":
+            self.result.value = str(self.format_number(float(self.result.value) ** 2))
+            self.reset()
+
+        elif data == "log":
+            self.result.value = str(self.format_number(math.log10(float(self.result.value))))
+            self.reset()
+
+        elif data == "ln":
+            self.result.value = str(self.format_number(math.log(float(self.result.value))))
+            self.reset()
+
+        elif data == "sin":
+            self.result.value = str(self.format_number(math.sin(math.radians(float(self.result.value)))))
+            self.reset()
 
         self.update()
 
@@ -170,10 +202,7 @@ class CalculatorApp(ft.Container):
 
 def main(page: ft.Page):
     page.title = "Calc App"
-    # create application instance
     calc = CalculatorApp()
-
-    # add application's root control to the page
     page.add(calc)
 
 
